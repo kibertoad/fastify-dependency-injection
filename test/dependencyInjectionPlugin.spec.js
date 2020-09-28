@@ -29,12 +29,20 @@ describe('dependencyInjectionPlugin', () => {
           return 10
         },
       }
+      const maxUserNameVariableBlueprint2 = {
+        moduleId: 'maxUserPassword',
+        factory: async () => {
+          return await Promise.resolve(20).then((result) => result)
+        },
+      }
 
       app = fastify({ logger: true })
-      const endpoint = (req, res) => {
+      const endpoint = async (req, res) => {
         const userService = app.diContainer.resolve('userService')
-        const maxUserName = userService.maxUserName
-        expect(maxUserName).toEqual(10)
+        expect(userService.maxUserName).toEqual(10)
+
+        const maxUserPassword = await req.diScope.resolve('maxUserPassword')
+        expect(maxUserPassword).toEqual(20)
         res.send({
           status: 'OK',
         })
@@ -42,7 +50,7 @@ describe('dependencyInjectionPlugin', () => {
 
       app.register(fastifyDependencyInjectionPlugin, {
         modules: [UserService, UserRepository],
-        variables: [maxUserNameVariableBlueprint],
+        variables: [maxUserNameVariableBlueprint2, maxUserNameVariableBlueprint],
       })
       app.post('/', endpoint)
       await app.ready()

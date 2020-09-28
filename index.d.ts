@@ -25,7 +25,7 @@ export interface ModuleBlueprint<T = any> {
   readonly scope?: InjectionScope
   readonly priority?: number // higher wins
   readonly forClass?: Function
-  readonly factory?: () => T
+  readonly factory?: (() => T) | (() => Promise<T>)
   readonly value?: T
 }
 
@@ -33,7 +33,7 @@ export class ResolvedModule<T extends Record<string, any>> {
   constructor(dependencies: T)
 }
 
-export type InjectionScope = 'app' | 'request' | 'always'
+export type InjectionScope = 'app' | 'request' | 'transient'
 
 export const fastifyDependencyInjectionPlugin: FastifyPluginCallback<NonNullable<
   FastifyDependencyInjectionOptions

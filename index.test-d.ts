@@ -9,8 +9,6 @@ class UserService extends ResolvedModule<{
 }> {
   static readonly blueprint: ModuleBlueprint<UserService> = {
     moduleId: "userService",
-    requiredModules: ["userRepositorys"],
-    requiredVariables: ["maxUserName"],
     forClass: UserService
   };
 }
@@ -19,6 +17,13 @@ const maxUserNameVariableBlueprint: ModuleBlueprint<number> = {
   moduleId: "maxUserName",
   factory: () => {
     return 10;
+  },
+};
+
+const asyncMaxUserNameVariableBlueprint: ModuleBlueprint<number> = {
+  moduleId: "maxUserName",
+  factory: () => {
+    return Promise.resolve(10);
   },
 };
 
