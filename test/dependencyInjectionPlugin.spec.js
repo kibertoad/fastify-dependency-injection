@@ -1,62 +1,54 @@
-const fastify = require("fastify");
+const fastify = require('fastify')
 
-const { fastifyDependencyInjectionPlugin } = require("../index");
+const { fastifyDependencyInjectionPlugin } = require('../index')
 
-describe("dependencyInjectionPlugin", () => {
-  let app;
+describe('dependencyInjectionPlugin', () => {
+  let app
   afterEach(() => {
-    return app.close();
-  });
+    return app.close()
+  })
 
-  describe("inject singleton", () => {
-    it("injects correctly", async () => {
+  describe('inject singleton', () => {
+    it('injects correctly', async () => {
       class UserService {
-        constructor({ userRepository, maxUserName }) {
-          this.userRepository = userRepository;
-          this.maxUserName = maxUserName;
-        }
+        static moduleId = 'userService'
 
-        static blueprint = {
-          forClass: UserService,
-          moduleId: "userService",
-          requiredModules: ["userRepository"],
-          requiredVariables: ["maxUserName"],
-        };
+        constructor({ userRepository, maxUserName }) {
+          this.userRepository = userRepository
+          this.maxUserName = maxUserName
+        }
       }
 
       class UserRepository {
-        static blueprint = {
-          forClass: UserRepository,
-          moduleId: "userRepository",
-        };
+        static moduleId = 'userRepository'
       }
 
       const maxUserNameVariableBlueprint = {
-        moduleId: "maxUserName",
+        moduleId: 'maxUserName',
         factory: () => {
-          return 10;
+          return 10
         },
-      };
+      }
 
-      app = fastify({ logger: true });
+      app = fastify({ logger: true })
       const endpoint = (req, res) => {
-        const userService = app.diContainer.resolve("userService");
-        const maxUserName = userService.maxUserName;
-        expect(maxUserName).toEqual(10);
+        const userService = app.diContainer.resolve('userService')
+        const maxUserName = userService.maxUserName
+        expect(maxUserName).toEqual(10)
         res.send({
-          status: "OK",
-        });
-      };
+          status: 'OK',
+        })
+      }
 
       app.register(fastifyDependencyInjectionPlugin, {
-        modules: [UserService.blueprint, UserRepository.blueprint],
+        modules: [UserService, UserRepository],
         variables: [maxUserNameVariableBlueprint],
-      });
-      app.post("/", endpoint);
-      await app.ready();
+      })
+      app.post('/', endpoint)
+      await app.ready()
 
-      const response = await app.inject().post("/").end();
-      expect(response.statusCode).toEqual(200);
-    });
-  });
-});
+      const response = await app.inject().post('/').end()
+      expect(response.statusCode).toEqual(200)
+    })
+  })
+})
